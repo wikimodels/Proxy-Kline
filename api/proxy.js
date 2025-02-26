@@ -6,20 +6,28 @@ export const config = {
 };
 import { createClient } from "redis";
 
-const redis = await createClient({ url: process.env.REDIS_URL }).connect();
-
 export default async function handler(request) {
   const apiUrl = process.env.DATA_API_URL;
   const apiKey = process.env.DATA_API_KEY;
+  const redisUrl = process.env.REDIS_URL;
   await redis.set("fuck", "shit");
   const value = await redis.get("fuck");
 
-  if (!apiUrl || !apiKey) {
+  if (!apiUrl || !apiKey || !redisUrl) {
     return new Response(
-      JSON.stringify({ error: "Missing MongoDB Data API configuration." }),
+      JSON.stringify({ error: "Missing MongoDB Data API configuration" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+
+  if (!redisUrl) {
+    return new Response(
+      JSON.stringify({ error: "Missing Redis API configuration" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const redis = await createClient({ url: process.env.REDIS_URL }).connect();
 
   // Build the payload for the Data API request.
   const payload = {
