@@ -14,7 +14,7 @@ export default async function handler(request) {
   const apiKey =
     "l89zMoWeQol7nWk4DrjHetqzPAcWovXrON7OTFDmc66ZsvT2ZxcGhI6Oeyy8vxtV";
   const apiUrl =
-    "https://eu-central-1.aws.data.mongodb-api.com/app/data-fdporzc/endpoint/data/v1";
+    "https://eu-central-1.aws.data.mongodb-api.com/app/data-fdporzc/endpoint/data/v1/action/find";
 
   if (!apiUrl || !apiKey) {
     return new Response(
