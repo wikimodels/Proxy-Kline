@@ -7,9 +7,14 @@ export const config = {
 
 export default async function handler(request) {
   // Retrieve the API URL and API key from environment variables. Shit
-  const apiUrl = process.env.DATA_API_URL;
-  const apiKey = process.env.DATA_API_KEY;
-  console.log("Fuck");
+  // const apiUrl = process.env.DATA_API_URL;
+  // const apiKey = process.env.DATA_API_KEY;
+  // console.log("Fuck");
+
+  const apiKey =
+    "l89zMoWeQol7nWk4DrjHetqzPAcWovXrON7OTFDmc66ZsvT2ZxcGhI6Oeyy8vxtV";
+  const apiUrl =
+    "https://eu-central-1.aws.data.mongodb-api.com/app/data-fdporzc/endpoint/data/v1";
 
   if (!apiUrl || !apiKey) {
     return new Response(
