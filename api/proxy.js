@@ -7,8 +7,8 @@ export const config = {
 
 export default async function handler(request) {
   // Retrieve environment variables.
-  const redisUrl = process.env.REDIS_REST_URL;
-  const redisToken = process.env.REDIS_REST_TOKEN;
+  const redisUrl = process.env.KV_REST_API_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN;
   const dataApiUrl = process.env.DATA_API_URL;
   const dataApiKey = process.env.DATA_API_KEY;
 
