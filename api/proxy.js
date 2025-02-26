@@ -52,10 +52,13 @@ export default async function handler(request) {
     }
 
     const data = await response.json();
-    return new Response(value), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return (
+      new Response(value),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: "Error fetching data", details: error.message }),
