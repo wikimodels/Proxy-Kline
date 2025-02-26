@@ -1,35 +1,36 @@
 // api/get-coins.js
 
+import { Redis } from "@upstash/redis";
+
 export const config = {
   runtime: "edge",
-  regions: ["fra1"], // Change to an allowed region if needed.
+  regions: ["fra1"], // Use an allowed region if needed.
 };
-import { createClient } from "redis";
 
 export default async function handler(request) {
+  // Retrieve MongoDB API configuration from environment variables.
   const apiUrl = process.env.DATA_API_URL;
   const apiKey = process.env.DATA_API_KEY;
-  const redisUrl = process.env.REDIS_URL;
-  await redis.set("fuck", "shit");
-  const value = await redis.get("fuck");
 
-  if (!apiUrl || !apiKey || !redisUrl) {
+  // Validate that required configurations are present.
+  if (!apiUrl || !apiKey) {
     return new Response(
       JSON.stringify({ error: "Missing MongoDB Data API configuration" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  if (!redisUrl) {
-    return new Response(
-      JSON.stringify({ error: "Missing Redis API configuration" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
+  // Initialize the Upstash Redis client.
+  const redis = new Redis({
+    url: process.env.REDIS_URL || "your-redis-url", // Preferably use env var
+    token: process.env.REDIS_TOKEN || "your-redis-token",
+  });
 
-  const redis = await createClient({ url: process.env.REDIS_URL }).connect();
+  // Test setting and getting a value from Redis.
+  await redis.set("foo", "bar");
+  const redisValue = await redis.get("foo");
 
-  // Build the payload for the Data API request.
+  // Build the payload for the MongoDB Data API request.
   const payload = {
     dataSource: "Cluster0", // Your cluster name
     database: "general", // Your database name
@@ -59,9 +60,23 @@ export default async function handler(request) {
       );
     }
 
-    const data = await response.json();
-    return (
-      new Response(value),
+    const mongoData = await response.json();
+
+    // Return a single response with both Redis and MongoDB data.
+    // return new Response(
+    //   JSON.stringify({
+    //     redisValue,
+    //     mongoData,
+    //   }),
+    //   {
+    //     status: 200,
+    //     headers: { "Content-Type": "application/json" },
+    //   }
+    // );
+    return new Response(
+      JSON.stringify({
+        redisValue,
+      }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
