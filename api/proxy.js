@@ -7,8 +7,8 @@ export const config = {
 
 export default async function handler(request) {
   // Retrieve the API URL and API key from environment variables.
-  const apiUrl = process.env.MONGO_DATA_API_URL;
-  const apiKey = process.env.MONGO_DATA_API_KEY;
+  const apiUrl = process.env.DATA_API_URL;
+  const apiKey = process.env.DATA_API_KEY;
 
   if (!apiUrl || !apiKey) {
     return new Response(
