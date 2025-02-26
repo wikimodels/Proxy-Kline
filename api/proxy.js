@@ -4,16 +4,15 @@ export const config = {
   runtime: "edge",
   regions: ["fra1"], // Change to an allowed region if needed.
 };
+import { createClient } from "redis";
+
+const redis = await createClient({ url: process.env.REDIS_URL }).connect();
 
 export default async function handler(request) {
   const apiUrl = process.env.DATA_API_URL;
   const apiKey = process.env.DATA_API_KEY;
-  // console.log("Fuck");
-
-  // const apiKey =
-  //   "l89zMoWeQol7nWk4DrjHetqzPAcWovXrON7OTFDmc66ZsvT2ZxcGhI6Oeyy8vxtV";
-  // const apiUrl =
-  //   "https://eu-central-1.aws.data.mongodb-api.com/app/data-fdporzc/endpoint/data/v1";
+  await redis.set("fuck", "shit");
+  const value = await redis.get("fuck");
 
   if (!apiUrl || !apiKey) {
     return new Response(
@@ -53,7 +52,7 @@ export default async function handler(request) {
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify(data.documents), {
+    return new Response(value), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
