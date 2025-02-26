@@ -84,7 +84,7 @@ export default async function handler(request) {
 
   try {
     // Call the MongoDB Atlas Data API.
-    const mongoResponse = await fetch(dataApiUrl, {
+    const mongoResponse = await fetch(dataApiUrl + "/action/find", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
