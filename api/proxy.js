@@ -6,9 +6,6 @@ export const config = {
 import { getFilteredCoinSymbols } from "../functions/get-filtered-coin-symbols";
 import { binancePerpUrl } from "../functions/binance-perp-url";
 import { bybitPerpUrl } from "../functions/bybit-perp-url";
-import { convertIntervalToMs } from "../functions/convertIntervalToMs";
-import { processBinanceKlineData } from "../functions/processBinanceKlineData";
-import { processBybitKlineData } from "../functions/processBybitKlineData";
 
 export default async function handler(request) {
   // =====================
