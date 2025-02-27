@@ -1,6 +1,6 @@
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["dub1"],
 };
 
 import { getFilteredCoinSymbols } from "../functions/get-filtered-coin-symbols";
