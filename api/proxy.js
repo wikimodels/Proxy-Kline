@@ -6,111 +6,129 @@ export const config = {
 };
 
 export default async function handler(request) {
-  // Retrieve environment variables.
-  const redisUrlRaw = process.env.KV_REST_API_URL;
+  // =====================
+  // 1. Validate Environment Variables
+  // =====================
+  const redisUrl = process.env.KV_REST_API_URL?.endsWith("/")
+    ? process.env.KV_REST_API_URL.slice(0, -1)
+    : process.env.KV_REST_API_URL;
   const redisToken = process.env.KV_REST_API_TOKEN;
   const dataApiUrl = process.env.DATA_API_URL;
   const dataApiKey = process.env.DATA_API_KEY;
 
-  if (!redisUrlRaw || !redisToken) {
+  if (!redisUrl || !redisToken) {
     return new Response(
-      JSON.stringify({ error: "Missing Upstash Redis configuration." }),
+      JSON.stringify({ error: "Missing Upstash Redis configuration" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 
   if (!dataApiUrl || !dataApiKey) {
     return new Response(
-      JSON.stringify({ error: "Missing MongoDB Data API configuration." }),
+      JSON.stringify({ error: "Missing MongoDB Data API configuration" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  // Remove any trailing slash from the Redis URL.
-  const redisUrl = redisUrlRaw.replace(/\/$/, "");
-
-  // Build the payload for the MongoDB Data API request.
-  const mongoPayload = {
-    dataSource: "Cluster0",
-    database: "general",
-    collection: "coin-repo",
-    filter: {},
-  };
-
+  // =====================
+  // 2. Fetch Data from MongoDB
+  // =====================
   try {
-    // Fetch coin data from MongoDB.
-    const mongoResponse = await fetch(dataApiUrl + "/action/find", {
+    const mongoResponse = await fetch(`${dataApiUrl}/action/find`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "api-key": dataApiKey,
       },
-      body: JSON.stringify(mongoPayload),
+      body: JSON.stringify({
+        dataSource: "Cluster0",
+        database: "general",
+        collection: "coin-repo",
+        filter: {},
+      }),
     });
 
     if (!mongoResponse.ok) {
       const errorText = await mongoResponse.text();
       return new Response(
         JSON.stringify({
-          error: "Error fetching MongoDB data",
+          error: "MongoDB request failed",
           details: errorText,
         }),
-        {
-          status: mongoResponse.status,
-          headers: { "Content-Type": "application/json" },
-        }
+        { status: mongoResponse.status }
       );
     }
 
     const mongoData = await mongoResponse.json();
     const coins = mongoData.documents || [];
-    const coinsCount = coins.length;
 
-    // Build the RedisJSON command payload using the correct root path "$"
-    // CORRECT: Send the raw JSON array without double-stringification
-    const redisPayload = {
-      command: ["JSON.SET", "coins", ".", coins],
-    };
+    // =====================
+    // 3. Validate & Prepare Redis Data
+    // =====================
+    if (!Array.isArray(coins)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid data format from MongoDB" }),
+        { status: 500 }
+      );
+    }
 
-    // Log the payload for debugging (remove in production)
-    //console.log("Redis Payload:", redisPayload);
+    // Safely serialize data (handle circular references)
+    let redisValue;
+    try {
+      redisValue = JSON.stringify(coins);
+    } catch (e) {
+      return new Response(
+        JSON.stringify({
+          error: "Data serialization failed",
+          details: e.message,
+        }),
+        { status: 500 }
+      );
+    }
 
-    // Use a POST request to store the coins data in Redis.
-    const setResponse = await fetch(redisUrl, {
+    // =====================
+    // 4. Store in Redis
+    // =====================
+    const redisResponse = await fetch(redisUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${redisToken}`,
       },
-      body: JSON.stringify(redisPayload),
+      body: JSON.stringify({
+        command: ["JSON.SET", "coins", "$", redisValue],
+      }),
     });
 
-    if (!setResponse.ok) {
-      const errorText = await setResponse.text();
+    if (!redisResponse.ok) {
+      const errorText = await redisResponse.text();
       return new Response(
         JSON.stringify({
-          error: "Error storing coins data in Redis",
+          error: "Redis operation failed",
           details: errorText,
         }),
-        {
-          status: setResponse.status,
-          headers: { "Content-Type": "application/json" },
-        }
+        { status: redisResponse.status }
       );
     }
 
-    // Return a JSON response with the number of coins stored.
-    return new Response(JSON.stringify({ stored: coinsCount }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    // =====================
+    // 5. Return Success Response
+    // =====================
+    return new Response(
+      JSON.stringify({
+        success: true,
+        count: coins.length,
+        redisStatus: (await redisResponse.json()).result,
+      }),
+      { status: 200 }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: "Error processing request",
+        error: "Server error",
         details: error.message,
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
