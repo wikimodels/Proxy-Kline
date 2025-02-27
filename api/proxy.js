@@ -2,6 +2,7 @@ export const config = {
   runtime: "edge",
   regions: ["fra1"],
 };
+import { getFilteredCoins } from "../functions/get-filtered-coins";
 
 export default async function handler(request) {
   // =====================
