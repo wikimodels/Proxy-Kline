@@ -109,9 +109,9 @@ export default async function handler(request) {
     );
   }
 }
-function bybitPerpUrl(symbol, interval, limit, category) {
+function bybitPerpUrl(symbol, interval, limit) {
   const baseUrl = "https://api.bybit.com/v5/market/kline";
-  return `${baseUrl}?category=${category}&symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  return `${baseUrl}?category=linear&symbol=${symbol}&interval=${interval}&limit=${limit}`;
 }
 
 function binancePerpUrl(symbol, interval, limit) {
