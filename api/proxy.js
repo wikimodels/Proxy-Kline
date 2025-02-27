@@ -75,7 +75,7 @@ export default async function handler(request) {
     // =====================
 
     // Fetch Bybit klines
-    const bybitKlines = await fetchBybitKlines(coins, timeframe);
+    const bybitKlines = await fetchBybitKlines(coins, timeframe, limit);
 
     // =====================
     // 6. Return Combined Response

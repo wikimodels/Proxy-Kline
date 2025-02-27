@@ -198,17 +198,6 @@ export default async function handler(request) {
     // 6. Fetch and Process Kline Data concurrently using Promise.all
     // =====================
 
-    // For Binance: fetch and process each symbol's kline data
-    const binanceKlinesPromises = binanceSymbols.map((symbol) => {
-      const url = binancePerpUrl(symbol, interval, limit);
-      return fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          const coin = coinMap[symbol] || {};
-          return processBinanceKlineData(data, symbol, coin, intervalMs);
-        });
-    });
-
     // For Bybit: fetch and process each symbol's kline data
     const bybitKlinesPromises = bybitSymbols.map((symbol) => {
       const url = bybitPerpUrl(symbol, interval, limit);
