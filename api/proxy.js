@@ -1,5 +1,3 @@
-// api/get-coins.js
-
 export const config = {
   runtime: "edge",
   regions: ["fra1"],
@@ -63,7 +61,7 @@ export default async function handler(request) {
     const coins = mongoData.documents || [];
 
     // =====================
-    // 3. Validate & Prepare Redis Data
+    // 3. Validate & Prepare Data
     // =====================
     if (!Array.isArray(coins)) {
       return new Response(
@@ -72,56 +70,12 @@ export default async function handler(request) {
       );
     }
 
-    // Safely serialize data (handle circular references)
-    let redisValue;
-    try {
-      redisValue = JSON.stringify(coins);
-    } catch (e) {
-      return new Response(
-        JSON.stringify({
-          error: "Data serialization failed",
-          details: e.message,
-        }),
-        { status: 500 }
-      );
-    }
-
-    // =====================
-    // 4. Store in Redis
-    // =====================
-    const redisResponse = await fetch(redisUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${redisToken}`,
-      },
-      body: JSON.stringify({
-        command: ["JSON.SET", "coins", "$", redisValue],
-      }),
+    const { binanceCoins, bybtCoins } = getFilteredCoins(coins);
+    const symbols = binanceCoins.map((c) => c.symbol);
+    return new Response(JSON.stringify({ binanceCoins, symbols }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
     });
-
-    if (!redisResponse.ok) {
-      const errorText = await redisResponse.text();
-      return new Response(
-        JSON.stringify({
-          error: "Redis operation failed",
-          details: errorText,
-        }),
-        { status: redisResponse.status }
-      );
-    }
-
-    // =====================
-    // 5. Return Success Response
-    // =====================
-    return new Response(
-      JSON.stringify({
-        success: true,
-        count: coins.length,
-        redisStatus: (await redisResponse.json()).result,
-      }),
-      { status: 200 }
-    );
   } catch (error) {
     return new Response(
       JSON.stringify({
