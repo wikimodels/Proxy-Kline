@@ -164,7 +164,7 @@ async function fetchBybitKlines(coins, timeframe, limit) {
       };
 
       for (const entry of rawEntries) {
-        if (!Array.isArray(entry) || entry.length < 7) continue;
+        if (!Array.isArray(entry)) continue;
 
         klineData.push({
           openTime: Number(entry[0]),
