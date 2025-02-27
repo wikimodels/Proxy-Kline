@@ -4,8 +4,6 @@ export const config = {
 };
 
 import { getFilteredCoinSymbols } from "../functions/get-filtered-coin-symbols";
-import { binancePerpUrl } from "../functions/binance-perp-url";
-import { bybitPerpUrl } from "../functions/bybit-perp-url";
 
 export default async function handler(request) {
   // =====================
@@ -110,4 +108,13 @@ export default async function handler(request) {
       { status: 500 }
     );
   }
+}
+function bybitPerpUrl(symbol, interval, limit, category) {
+  const baseUrl = "https://api.bybit.com/v5/market/kline";
+  return `${baseUrl}?category=${category}&symbol=${symbol}&interval=${interval}&limit=${limit}`;
+}
+
+function binancePerpUrl(symbol, interval, limit) {
+  const baseUrl = "https://fapi.binance.com";
+  return `${baseUrl}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
 }
