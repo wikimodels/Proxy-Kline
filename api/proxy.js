@@ -2,7 +2,7 @@
 
 export const config = {
   runtime: "edge",
-  regions: ["fra1"], // Use an allowed region if needed.
+  regions: ["fra1"],
 };
 
 export default async function handler(request) {
@@ -30,12 +30,12 @@ export default async function handler(request) {
     dataSource: "Cluster0",
     database: "general",
     collection: "coin-repo",
-    filter: {}, // Retrieve all documents (adjust filter if needed)
+    filter: {},
   };
 
   try {
     // Fetch coin data from MongoDB Data API.
-    const mongoResponse = await fetch(dataApiUrl + "/action/find", {
+    const mongoResponse = await fetch(dataApiUrl + "action/find", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -62,15 +62,16 @@ export default async function handler(request) {
     const coins = mongoData.documents || [];
     const coinsCount = coins.length;
 
-    // Store coins data in Redis under the key "coins".
-    const setUrl = `${redisUrl}/SET/coins/${encodeURIComponent(
-      JSON.stringify(coins)
-    )}`;
-    const setResponse = await fetch(setUrl, {
-      method: "GET", // Upstash REST API uses GET for commands like SET.
+    // Use POST to store the coins in Redis to avoid a too-long URL.
+    const setResponse = await fetch(`${redisUrl}/`, {
+      method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${redisToken}`,
       },
+      body: JSON.stringify({
+        command: ["SET", "coins", JSON.stringify(coins)],
+      }),
     });
 
     if (!setResponse.ok) {
