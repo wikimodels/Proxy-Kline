@@ -4,7 +4,7 @@ export const config = {
   regions: ["hkg1"], // Hong Kong region (Binance-friendly)
 };
 
-export async function GET() {
+export default async function handler(request) {
   const apiKey =
     "EdRGpmIPUePKACmDlPCyuq1MPKgXjXMSoRR18ngEtJRX6dbQggHLWv361JwlX4sB";
   // Debug log to verify API key (remove in production)
