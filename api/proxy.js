@@ -2,25 +2,20 @@ export const config = {
   runtime: "edge",
   regions: ["fra1"],
 };
-import { getFilteredCoins } from "../functions/get-filtered-coins";
+
+import { getFilteredCoinSymbols } from "../functions/get-filtered-coin-symbols";
+import { binancePerpUrl } from "../functions/binance-perp-url";
+import { bybitPerpUrl } from "../functions/bybit-perp-url";
+import { convertIntervalToMs } from "../functions/convertIntervalToMs";
+import { processBinanceKlineData } from "../functions/processBinanceKlineData";
+import { processBybitKlineData } from "../functions/processBybitKlineData";
 
 export default async function handler(request) {
   // =====================
   // 1. Validate Environment Variables
   // =====================
-  const redisUrl = process.env.KV_REST_API_URL?.endsWith("/")
-    ? process.env.KV_REST_API_URL.slice(0, -1)
-    : process.env.KV_REST_API_URL;
-  const redisToken = process.env.KV_REST_API_TOKEN;
   const dataApiUrl = process.env.DATA_API_URL;
   const dataApiKey = process.env.DATA_API_KEY;
-
-  if (!redisUrl || !redisToken) {
-    return new Response(
-      JSON.stringify({ error: "Missing Upstash Redis configuration" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
 
   if (!dataApiUrl || !dataApiKey) {
     return new Response(
@@ -71,12 +66,52 @@ export default async function handler(request) {
       );
     }
 
-    const { binanceCoins, bybitCoins } = getFilteredCoins(coins);
+    // Create a lookup map for coin details by symbol
+    const coinMap = coins.reduce((acc, coin) => {
+      if (coin.symbol) {
+        acc[coin.symbol] = coin;
+      }
+      return acc;
+    }, {});
 
-    return new Response(JSON.stringify({ binanceCoins, bybitCoins }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    // Get filtered symbols for Binance and Bybit
+    const { binanceSymbols, bybitSymbols } = getFilteredCoinSymbols(coins);
+
+    // =====================
+    // 4. Define kline request parameters
+    // =====================
+    const binanceInterval = "5m";
+    const bybitInterval = "5m";
+    const limit = 100;
+
+    // =====================
+    // 5. Fetch and Process Kline Data concurrently using Promise.all
+    // =====================
+    const binanceKlinesPromises = binanceSymbols.map((symbol) => {
+      const url = binancePerpUrl(symbol, binanceInterval, limit);
+      return fetch(url).then((res) => res.json());
     });
+
+    const bybitKlinesPromises = bybitSymbols.map((symbol) => {
+      const url = bybitPerpUrl(symbol, bybitInterval, limit);
+      return fetch(url).then((res) => res.json());
+    });
+
+    const [binanceKlines, bybitKlines] = await Promise.all([
+      Promise.all(binanceKlinesPromises),
+      Promise.all(bybitKlinesPromises),
+    ]);
+
+    // =====================
+    // 6. Return Combined Response
+    // =====================
+    return new Response(
+      JSON.stringify({
+        binanceKlines,
+        bybitKlines,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({
