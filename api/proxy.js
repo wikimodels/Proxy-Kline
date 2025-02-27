@@ -31,7 +31,7 @@ export default async function handler(request) {
         dataSource: "Cluster0",
         database: "general",
         collection: "coin-repo",
-        filter: {}, // Fixed: Removed unnecessary filter
+        filter: { collection: "coin-repo" },
       }),
     });
 
@@ -82,7 +82,7 @@ export default async function handler(request) {
     // =====================
     return new Response(
       JSON.stringify({
-        bybitCoins,
+        coins,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
