@@ -7,17 +7,18 @@ export const config = {
 
 export default async function handler(request) {
   // Retrieve environment variables.
-  const redisUrl = process.env.KV_REST_API_URL;
+  const redisUrlRaw = process.env.KV_REST_API_URL;
   const redisToken = process.env.KV_REST_API_TOKEN;
   const dataApiUrl = process.env.DATA_API_URL;
   const dataApiKey = process.env.DATA_API_KEY;
 
-  if (!redisUrl || !redisToken) {
+  if (!redisUrlRaw || !redisToken) {
     return new Response(
       JSON.stringify({ error: "Missing Upstash Redis configuration." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+
   if (!dataApiUrl || !dataApiKey) {
     return new Response(
       JSON.stringify({ error: "Missing MongoDB Data API configuration." }),
@@ -25,7 +26,10 @@ export default async function handler(request) {
     );
   }
 
-  // Build payload for MongoDB Data API request.
+  // Remove any trailing slash from the Redis URL.
+  const redisUrl = redisUrlRaw.replace(/\/$/, "");
+
+  // Build the payload for the MongoDB Data API request.
   const mongoPayload = {
     dataSource: "Cluster0",
     database: "general",
@@ -62,12 +66,15 @@ export default async function handler(request) {
     const coins = mongoData.documents || [];
     const coinsCount = coins.length;
 
-    // Build the Redis command payload to set key "coins" to the JSON-stringified coins array.
+    // Build the RedisJSON command payload using the correct root path "$"
     const redisPayload = {
       command: ["JSON.SET", "coins", "$", JSON.stringify(coins)],
     };
 
-    // Send a POST request to Upstash REST API (using redisUrl without a trailing slash).
+    // Log the payload for debugging (remove in production)
+    //console.log("Redis Payload:", redisPayload);
+
+    // Use a POST request to store the coins data in Redis.
     const setResponse = await fetch(redisUrl, {
       method: "POST",
       headers: {
@@ -91,7 +98,7 @@ export default async function handler(request) {
       );
     }
 
-    // Return a JSON message with the number of coins stored.
+    // Return a JSON response with the number of coins stored.
     return new Response(JSON.stringify({ stored: coinsCount }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
