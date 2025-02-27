@@ -1,54 +1,54 @@
-export const config = {
-  runtime: "edge",
-  regions: ["kix1"],
-};
+// api/binance.js (Vercel Serverless Function)
 
-export default async function handler(request) {
-  // Use environment variables for the API key if needed:
-  const apiKey = process.env.BINANCE_API_KEY; // for example
+export default async function handler(req, res) {
+  // 1. Get API key from environment
+  const apiKey =
+    "EdRGpmIPUePKACmDlPCyuq1MPKgXjXMSoRR18ngEtJRX6dbQggHLWv361JwlX4sB";
+
+  if (!apiKey) {
+    return res.status(500).json({ error: "Binance API key not configured" });
+  }
+
+  // 2. Basic parameters
   const params = new URLSearchParams({
     symbol: "BTCUSDT",
     interval: "5m",
     limit: "1",
   });
 
-  // Choose the endpoint depending on what data you need:
-  // For Spot:
-  // const endpoint = `https://api.binance.com/api/v3/klines?${params}`;
-  // For Futures, uncomment the next line:
-  const endpoint = `https://fapi.binance.com/fapi/v1/klines?${params}`;
-
   try {
-    const res = await fetch(endpoint, {
-      headers: {
-        // Use a realistic user-agent if necessary:
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        // If using API key from an env variable:
-        "X-MBX-APIKEY":
-          "EdRGpmIPUePKACmDlPCyuq1MPKgXjXMSoRR18ngEtJRX6dbQggHLWv361JwlX4sB",
-      },
-    });
+    // 3. Use MAIN Binance API endpoint (not futures)
+    const response = await fetch(
+      `https://api.binance.com/api/v3/klines?${params}`,
+      {
+        headers: {
+          "X-MBX-APIKEY": apiKey,
+          "User-Agent": "Node/18", // Simple but effective UA
+        },
+      }
+    );
 
-    if (!res.ok) {
-      // Try reading as text since the error might not be JSON
-      const errorText = await res.text();
-      console.error("Error fetching Binance data:", errorText);
-      throw new Error(`Binance API Error: ${errorText}`);
+    // 4. Handle response
+    if (!response.ok) {
+      const error = await response.json();
+      return res.status(400).json({
+        error: `Binance API error: ${error.msg}`,
+        code: error.code,
+      });
     }
 
-    const data = await res.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "X-Binance-Request-Weight": res.headers.get("x-mbx-used-weight") || "",
-      },
+    // 5. Return clean data
+    const data = await response.json();
+    return res.status(200).json({
+      open: data[0][1],
+      high: data[0][2],
+      low: data[0][3],
+      close: data[0][4],
     });
   } catch (error) {
-    console.error("API Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+    return res.status(500).json({
+      error: "Network error",
+      details: error.message,
     });
   }
 }
