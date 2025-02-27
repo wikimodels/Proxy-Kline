@@ -170,7 +170,7 @@ async function fetchBybitKlines(coins, timeframe, limit) {
         klineData.push({
           openTime: Number(entry[0]),
           closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
-          symbol,
+          symbol: coin.symbol,
           category: coin.category,
           exchanges: coin.exchanges,
           openPrice: Number(entry[1]),
@@ -182,10 +182,10 @@ async function fetchBybitKlines(coins, timeframe, limit) {
         });
       }
 
-      return { symbol, klineData };
+      return { symbol: coin.symbol, klineData };
     } catch (error) {
       console.error(`Error processing ${symbol}:`, error);
-      return { symbol, klineData: [] };
+      return { symbol: coin.symbol, klineData: [] };
     }
   });
 
