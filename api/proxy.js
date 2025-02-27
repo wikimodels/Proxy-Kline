@@ -64,7 +64,7 @@ export default async function handler(request) {
 
     // Build the Redis command payload to set key "coins" to the JSON-stringified coins array.
     const redisPayload = {
-      command: ["SET", "coins", JSON.stringify(coins)],
+      command: ["JSON.SET", "coins", "$", JSON.stringify(coins)],
     };
 
     // Send a POST request to Upstash REST API (using redisUrl without a trailing slash).
