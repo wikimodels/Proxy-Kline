@@ -3,8 +3,6 @@ export const config = {
   regions: ["dxb1"],
 };
 
-import { getFilteredCoinSymbols } from "../functions/get-filtered-coin-symbols";
-
 export default async function handler(request) {
   // =====================
   // 1. Validate Environment Variables
