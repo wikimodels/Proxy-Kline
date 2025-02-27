@@ -76,6 +76,7 @@ export default async function handler(request) {
     // =====================
     const binanceKlinesPromises = binanceSymbols.map((symbol) => {
       const url = binancePerpUrl(symbol, binanceInterval, limit);
+      console.log(url);
       return fetch(url).then((res) => res.json());
     });
 
