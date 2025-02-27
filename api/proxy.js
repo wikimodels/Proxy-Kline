@@ -86,7 +86,7 @@ export default async function handler(request) {
       return fetch(url).then((res) => res.json());
     });
 
-    const binanceKlines = await Promise.all(binanceKlinesPromises);
+    //const binanceKlines = await Promise.all(binanceKlinesPromises);
     // const bybitKlines = await Promise.all(bybitKlinesPromises);
     // const [binanceKlines, bybitKlines] = await Promise.all([
     //   Promise.all(binanceKlinesPromises),
