@@ -67,6 +67,7 @@ export default async function handler(request) {
     const coinsCount = coins.length;
 
     // Build the RedisJSON command payload using the correct root path "$"
+    // CORRECT: Send the raw JSON array without double-stringification
     const redisPayload = {
       command: ["JSON.SET", "coins", "$", JSON.stringify(coins)],
     };
