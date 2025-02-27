@@ -33,7 +33,7 @@ export default async function handler(request) {
         dataSource: "Cluster0",
         database: "general",
         collection: "coin-repo",
-        filter: { collection: "coin-repo" },
+        filter: {}, // Fixed: Removed unnecessary filter
       }),
     });
 
@@ -49,7 +49,11 @@ export default async function handler(request) {
     }
 
     const mongoData = await mongoResponse.json();
-    const coins = mongoData.documents || [];
+    const coins = (mongoData.documents || []).map((doc) => ({
+      symbol: doc.symbol || "unknown",
+      category: doc.category || "unknown",
+      exchanges: Array.isArray(doc.exchanges) ? doc.exchanges : [],
+    }));
 
     // =====================
     // 3. Validate & Prepare Data
@@ -61,19 +65,18 @@ export default async function handler(request) {
       );
     }
 
-    // Get filtered symbols for Binance and Bybit
-    const { binanceSymbols, bybitSymbols } = getFilteredCoinSymbols(coins);
-
     // =====================
     // 4. Define kline request parameters
     // =====================
     const binanceInterval = "5m";
-    const bybitInterval = "5";
+    const timeframe = "m5";
     const limit = 1;
 
     // =====================
     // 5. Fetch and Process Kline Data concurrently using Promise.all
     // =====================
+
+    // Fetch Binance klines
     const binanceKlinesPromises = binanceSymbols.map((symbol) => {
       const url = binancePerpUrl(symbol, binanceInterval, limit);
       return fetch(url).then(async (res) => {
@@ -86,86 +89,15 @@ export default async function handler(request) {
       });
     });
 
-    async function fetchBybitKlines(
-      bybitSymbols,
-      bybitPerpUrl,
-      bybitInterval,
-      limit,
-      calculateCloseTime,
-      coinsMap
-    ) {
-      const intervalMs = getIntervalDurationMs(bybitInterval); // Ensure this function exists
-
-      const bybitKlinesPromises = bybitSymbols.map(async (symbol) => {
-        try {
-          const url = bybitPerpUrl(symbol, bybitInterval, limit);
-          console.log(`Fetching: ${url}`);
-
-          const response = await fetch(url);
-          const data = await response.json();
-
-          if (!data?.result?.list || !Array.isArray(data.result.list)) {
-            throw new Error(`Invalid response structure for ${symbol}`);
-          }
-
-          const rawEntries = data.result.list;
-          const klineData = [];
-          const coin = coins.find((c) => c.symbol === symbol) || {
-            category: "unknown",
-            exchanges: [],
-          };
-
-          for (const entry of rawEntries) {
-            try {
-              if (!Array.isArray(entry) || entry.length < 7) {
-                throw new Error("Invalid entry structure");
-              }
-
-              klineData.push({
-                openTime: Number(entry[0]),
-                closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
-                symbol,
-                category: coin?.category || "unknown",
-                exchanges: coin?.exchanges || [],
-                openPrice: Number(entry[1]),
-                highPrice: Number(entry[2]),
-                lowPrice: Number(entry[3]),
-                closePrice: Number(entry[4]),
-                baseVolume: Number(entry[5]),
-                quoteVolume: Number(entry[6]),
-              });
-            } catch (entryError) {
-              console.warn(`Skipping invalid entry for ${symbol}:`, entryError);
-            }
-          }
-
-          if (klineData.length > 0) {
-            klineData.reverse();
-            klineData.pop(); // Remove last element only if array not empty
-          }
-
-          return { symbol, klineData };
-        } catch (error) {
-          console.error(`Error processing ${symbol}:`, error);
-          return { symbol, klineData: [] }; // Return empty array on error
-        }
-      });
-
-      return Promise.all(bybitKlinesPromises);
-    }
-
-    //const binanceKlines = await Promise.all(binanceKlinesPromises);
-    const bybitKlines = await Promise.all(bybitKlinesPromises);
-    // const [binanceKlines, bybitKlines] = await Promise.all([
-    //   Promise.all(binanceKlinesPromises),
-    //   Promise.all(bybitKlinesPromises),
-    // ]);
+    // Fetch Bybit klines
+    const bybitKlines = await fetchBybitKlines(coins, timeframe);
 
     // =====================
     // 6. Return Combined Response
     // =====================
     return new Response(
       JSON.stringify({
+        binanceKlines: await Promise.all(binanceKlinesPromises), // Fixed: Now awaited
         bybitKlines,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
@@ -180,6 +112,11 @@ export default async function handler(request) {
     );
   }
 }
+
+// ==========================
+// Helper Functions
+// ==========================
+
 function bybitPerpUrl(symbol, interval, limit) {
   const baseUrl = "https://api.bybit.com/v5/market/kline";
   return `${baseUrl}?category=linear&symbol=${symbol}&interval=${interval}&limit=${limit}`;
@@ -188,4 +125,104 @@ function bybitPerpUrl(symbol, interval, limit) {
 function binancePerpUrl(symbol, interval, limit) {
   const baseUrl = "https://fapi.binance.com";
   return `${baseUrl}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+}
+
+export function getIntervalDurationMs(tf) {
+  const timeframes = {
+    m1: 59999,
+    m5: 299999,
+    m15: 899999,
+    m30: 1799999,
+    h1: 3599999,
+    h2: 7199999,
+    h4: 14399999,
+    h6: 21599999,
+    h8: 28799999,
+    h12: 43199999,
+    D: 86399999,
+  };
+
+  if (!(tf in timeframes)) {
+    throw new Error(`Unsupported timeframe: ${tf}`);
+  }
+
+  return timeframes[tf];
+}
+
+export function calculateCloseTime(openTime, intervalMs) {
+  return openTime + intervalMs;
+}
+
+// ==========================
+// Bybit Klines Fetcher
+// ==========================
+async function fetchBybitKlines(coins, timeframe, limit) {
+  const intervalMs = getIntervalDurationMs(timeframe);
+  const bybitInterval = getBybitInterval(timeframe);
+  const bybitKlinesPromises = bybitSymbols.map(async (symbol) => {
+    try {
+      const url = bybitPerpUrl(symbol, bybitInterval, limit);
+      console.log(`Fetching: ${url}`);
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!data?.result?.list || !Array.isArray(data.result.list)) {
+        throw new Error(`Invalid response structure for ${symbol}`);
+      }
+
+      const rawEntries = data.result.list;
+      const klineData = [];
+      const coin = coins.find((c) => c.symbol === symbol) || {
+        category: "unknown",
+        exchanges: [],
+      };
+
+      for (const entry of rawEntries) {
+        if (!Array.isArray(entry)) continue;
+        klineData.push({
+          openTime: Number(entry[0]),
+          closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
+          symbol,
+          category: coin.category,
+          exchanges: coin.exchanges,
+          openPrice: Number(entry[1]),
+          highPrice: Number(entry[2]),
+          lowPrice: Number(entry[3]),
+          closePrice: Number(entry[4]),
+          baseVolume: Number(entry[5]),
+          quoteVolume: Number(entry[6]),
+        });
+      }
+
+      return { symbol, klineData };
+    } catch (error) {
+      console.error(`Error processing ${symbol}:`, error);
+      return { symbol, klineData: [] };
+    }
+  });
+
+  return Promise.all(bybitKlinesPromises);
+}
+
+function getBybitInterval(timeframe) {
+  const timeframes = {
+    m1: "1",
+    m5: "5",
+    m15: "15",
+    m30: "30",
+    h1: "60",
+    h2: "120",
+    h4: "240",
+    h6: "360",
+    h8: "480",
+    h12: "720",
+    D: "D",
+  };
+
+  if (!(tf in timeframes)) {
+    throw new Error(`Unsupported timeframe: ${tf}`);
+  }
+
+  return timeframes[tf];
 }
