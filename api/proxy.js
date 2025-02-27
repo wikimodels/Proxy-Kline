@@ -71,9 +71,9 @@ export default async function handler(request) {
       );
     }
 
-    const { binanceCoins, bybtCoins } = getFilteredCoins(coins);
-    const symbols = binanceCoins.map((c) => c.symbol);
-    return new Response(JSON.stringify({ binanceCoins, symbols }), {
+    const { binanceCoins, bybitCoins } = getFilteredCoins(coins);
+
+    return new Response(JSON.stringify({ binanceCoins, bybitCoins }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
