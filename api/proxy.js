@@ -74,18 +74,20 @@ export default async function handler(request) {
     // =====================
     // 5. Fetch and Process Kline Data concurrently using Promise.all
     // =====================
-    const binanceKlinesPromises = binanceSymbols.map((symbol) => {
-      const url = binancePerpUrl(symbol, binanceInterval, limit);
+    // const binanceKlinesPromises = binanceSymbols.map((symbol) => {
+    //   const url = binancePerpUrl(symbol, binanceInterval, limit);
+    //   console.log(url);
+    //   return fetch(url).then((res) => res.json());
+    // });
+
+    const bybitKlinesPromises = bybitSymbols.map((symbol) => {
+      const url = bybitPerpUrl(symbol, bybitInterval, limit);
       console.log(url);
       return fetch(url).then((res) => res.json());
     });
 
-    // const bybitKlinesPromises = bybitSymbols.map((symbol) => {
-    //   const url = bybitPerpUrl(symbol, bybitInterval, limit);
-    //   return fetch(url).then((res) => res.json());
-    // });
-
-    const binanceKlines = await Promise.all(binanceKlinesPromises);
+    // const binanceKlines = await Promise.all(binanceKlinesPromises);
+    const bybitKlines = await Promise.all(bybitKlinesPromises);
     // const [binanceKlines, bybitKlines] = await Promise.all([
     //   Promise.all(binanceKlinesPromises),
     //   Promise.all(bybitKlinesPromises),
@@ -96,7 +98,7 @@ export default async function handler(request) {
     // =====================
     return new Response(
       JSON.stringify({
-        binanceKlines,
+        bybitKlines,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
