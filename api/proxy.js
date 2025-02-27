@@ -35,7 +35,7 @@ export default async function handler(request) {
 
   try {
     // Fetch coin data from MongoDB Data API.
-    const mongoResponse = await fetch(dataApiUrl, {
+    const mongoResponse = await fetch(dataApiUrl + "/action/find", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
