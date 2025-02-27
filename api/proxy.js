@@ -152,9 +152,9 @@ async function fetchBybitKlines(coins, timeframe, limit) {
       const response = await fetch(url);
       const data = await response.json();
 
-      // if (!data?.result?.list || !Array.isArray(data.result.list)) {
-      //   throw new Error(`Invalid response structure for ${coin.symbol}`);
-      // }
+      if (!data?.result?.list || !Array.isArray(data.result.list)) {
+        throw new Error(`Invalid response structure for ${coin.symbol}`);
+      }
 
       const rawEntries = data.result.list;
       const klineData = [];
@@ -166,8 +166,8 @@ async function fetchBybitKlines(coins, timeframe, limit) {
           openTime: Number(entry[0]),
           closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
           symbol: coin.symbol,
-          category: coinMeta.category,
-          exchanges: coinMeta.exchanges,
+          category: coin.category,
+          exchanges: coin.exchanges,
           openPrice: Number(entry[1]),
           highPrice: Number(entry[2]),
           lowPrice: Number(entry[3]),
