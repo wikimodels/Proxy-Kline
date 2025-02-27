@@ -2,7 +2,7 @@
 
 export const config = {
   runtime: "edge",
-  regions: ["fra1"], // Change to an allowed region if needed.
+  regions: ["fra1"], // Use an allowed region if needed.
 };
 
 export default async function handler(request) {
@@ -18,7 +18,6 @@ export default async function handler(request) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-
   if (!dataApiUrl || !dataApiKey) {
     return new Response(
       JSON.stringify({ error: "Missing MongoDB Data API configuration." }),
@@ -26,65 +25,17 @@ export default async function handler(request) {
     );
   }
 
-  // Use Upstash Redis REST API to set a key "foo" to "bar"
-  const setUrl = `${redisUrl}/SET/foo/${encodeURIComponent("bar")}`;
-  const setResponse = await fetch(setUrl, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${redisToken}`,
-    },
-  });
-
-  if (!setResponse.ok) {
-    const errorText = await setResponse.text();
-    return new Response(
-      JSON.stringify({
-        error: "Error setting value in Redis",
-        details: errorText,
-      }),
-      {
-        status: setResponse.status,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  // Retrieve the value of key "foo" from Redis
-  const getUrl = `${redisUrl}/GET/foo`;
-  const getResponse = await fetch(getUrl, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${redisToken}`,
-    },
-  });
-
-  if (!getResponse.ok) {
-    const errorText = await getResponse.text();
-    return new Response(
-      JSON.stringify({
-        error: "Error getting value from Redis",
-        details: errorText,
-      }),
-      {
-        status: getResponse.status,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  const redisResult = await getResponse.json();
-
   // Build the payload for the MongoDB Data API request.
   const payload = {
     dataSource: "Cluster0",
     database: "general",
     collection: "coin-repo",
-    filter: {}, // Retrieve all documents (adjust if needed)
+    filter: {}, // Retrieve all documents (adjust filter if needed)
   };
 
   try {
-    // Call the MongoDB Atlas Data API.
-    const mongoResponse = await fetch(dataApiUrl + "/action/find", {
+    // Fetch coin data from MongoDB Data API.
+    const mongoResponse = await fetch(dataApiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -108,15 +59,45 @@ export default async function handler(request) {
     }
 
     const mongoData = await mongoResponse.json();
+    const coins = mongoData.documents || [];
+    const coinsCount = coins.length;
 
-    // Return both the Redis value and the MongoDB data.
-    return new Response(JSON.stringify({ redisValue: redisResult }), {
+    // Store coins data in Redis under the key "coins".
+    const setUrl = `${redisUrl}/SET/coins/${encodeURIComponent(
+      JSON.stringify(coins)
+    )}`;
+    const setResponse = await fetch(setUrl, {
+      method: "GET", // Upstash REST API uses GET for commands like SET.
+      headers: {
+        Authorization: `Bearer ${redisToken}`,
+      },
+    });
+
+    if (!setResponse.ok) {
+      const errorText = await setResponse.text();
+      return new Response(
+        JSON.stringify({
+          error: "Error storing coins data in Redis",
+          details: errorText,
+        }),
+        {
+          status: setResponse.status,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Return JSON with the number of coins stored.
+    return new Response(JSON.stringify({ stored: coinsCount }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: "Error fetching data", details: error.message }),
+      JSON.stringify({
+        error: "Error processing request",
+        details: error.message,
+      }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
