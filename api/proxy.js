@@ -155,12 +155,12 @@ async function fetchBybitKlines(coins, timeframe, limit) {
       const data = await response.json();
 
       if (!data?.result?.list || !Array.isArray(data.result.list)) {
-        throw new Error(`Invalid response structure for ${symbol}`);
+        throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
       const rawEntries = data.result.list;
       const klineData = [];
-      const coin = coins.find((c) => c.symbol === symbol) || {
+      const coin = coins.find((c) => c.symbol === coin.symbol) || {
         category: "unknown",
         exchanges: [],
       };
