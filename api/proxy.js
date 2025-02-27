@@ -79,15 +79,16 @@ export default async function handler(request) {
       return fetch(url).then((res) => res.json());
     });
 
-    const bybitKlinesPromises = bybitSymbols.map((symbol) => {
-      const url = bybitPerpUrl(symbol, bybitInterval, limit);
-      return fetch(url).then((res) => res.json());
-    });
+    // const bybitKlinesPromises = bybitSymbols.map((symbol) => {
+    //   const url = bybitPerpUrl(symbol, bybitInterval, limit);
+    //   return fetch(url).then((res) => res.json());
+    // });
 
-    const [binanceKlines, bybitKlines] = await Promise.all([
-      Promise.all(binanceKlinesPromises),
-      Promise.all(bybitKlinesPromises),
-    ]);
+    const binanceKlines = await Process.all(binanceKlinesPromises);
+    // const [binanceKlines, bybitKlines] = await Promise.all([
+    //   Promise.all(binanceKlinesPromises),
+    //   Promise.all(bybitKlinesPromises),
+    // ]);
 
     // =====================
     // 6. Return Combined Response
@@ -95,7 +96,6 @@ export default async function handler(request) {
     return new Response(
       JSON.stringify({
         binanceKlines,
-        bybitKlines,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
