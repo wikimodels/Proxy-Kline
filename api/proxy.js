@@ -68,26 +68,13 @@ export default async function handler(request) {
     // =====================
     // 4. Define kline request parameters
     // =====================
-    const binanceInterval = "5m";
+
     const timeframe = "m5";
     const limit = 1;
 
     // =====================
     // 5. Fetch and Process Kline Data concurrently using Promise.all
     // =====================
-
-    // Fetch Binance klines
-    const binanceKlinesPromises = binanceSymbols.map((symbol) => {
-      const url = binancePerpUrl(symbol, binanceInterval, limit);
-      return fetch(url).then(async (res) => {
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error(`Error for ${symbol}:`, errorText);
-          throw new Error(`HTTP error ${res.status} for ${symbol}`);
-        }
-        return res.json();
-      });
-    });
 
     // Fetch Bybit klines
     const bybitKlines = await fetchBybitKlines(coins, timeframe);
