@@ -25,8 +25,8 @@ export default async function handler(request) {
     );
   }
 
-  // Build the payload for the MongoDB Data API request.
-  const payload = {
+  // Build payload for MongoDB Data API request.
+  const mongoPayload = {
     dataSource: "Cluster0",
     database: "general",
     collection: "coin-repo",
@@ -34,14 +34,14 @@ export default async function handler(request) {
   };
 
   try {
-    // Fetch coin data from MongoDB Data API.
+    // Fetch coin data from MongoDB.
     const mongoResponse = await fetch(dataApiUrl + "/action/find", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "api-key": dataApiKey,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(mongoPayload),
     });
 
     if (!mongoResponse.ok) {
@@ -62,16 +62,19 @@ export default async function handler(request) {
     const coins = mongoData.documents || [];
     const coinsCount = coins.length;
 
-    // Use POST to store the coins in Redis to avoid a too-long URL.
-    const setResponse = await fetch(`${redisUrl}/`, {
+    // Build the Redis command payload to set key "coins" to the JSON-stringified coins array.
+    const redisPayload = {
+      command: ["SET", "coins", JSON.stringify(coins)],
+    };
+
+    // Send a POST request to Upstash REST API (using redisUrl without a trailing slash).
+    const setResponse = await fetch(redisUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${redisToken}`,
       },
-      body: JSON.stringify({
-        command: ["SET", "coins", JSON.stringify(coins)],
-      }),
+      body: JSON.stringify(redisPayload),
     });
 
     if (!setResponse.ok) {
@@ -88,7 +91,7 @@ export default async function handler(request) {
       );
     }
 
-    // Return JSON with the number of coins stored.
+    // Return a JSON message with the number of coins stored.
     return new Response(JSON.stringify({ stored: coinsCount }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
