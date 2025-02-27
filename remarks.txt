@@ -1,0 +1,19 @@
+cdg1: Paris, France – represents the Charles de Gaulle area.
+arn1: Stockholm, Sweden – represents Stockholm Arlanda Airport.
+dub1: Dublin, Ireland – represents Dublin Airport.
+lhr1: London, United Kingdom – represents Heathrow Airport.
+iad1: Ashburn, USA – represents Washington Dulles International Airport (near Ashburn, Virginia).
+sfo1: San Francisco, USA – represents San Francisco International Airport.
+pdx1: Portland, USA – represents Portland International Airport.
+cle1: Cleveland, USA – represents Cleveland Hopkins International Airport.
+gru1: São Paulo, Brazil – represents São Paulo–Guarulhos International Airport.
+hkg1: Hong Kong – represents Hong Kong International Airport.
+hnd1: Tokyo, Japan – represents Tokyo Haneda Airport.
+icn1: Seoul, South Korea – represents Incheon International Airport.
+kix1: Osaka, Japan – represents Kansai International Airport.
+sin1: Singapore – represents Singapore Changi Airport.
+bom1: Mumbai, India – represents Chhatrapati Shivaji Maharaj International Airport.
+syd1: Sydney, Australia – represents Sydney Kingsford Smith Airport.
+fra1: Frankfurt, Germany – represents Frankfurt Airport.
+cpt1: Cape Town, South Africa – represents Cape Town International Airport.
+dxb1: Dubai, UAE – represents Dubai International Airport.
