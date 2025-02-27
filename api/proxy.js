@@ -146,6 +146,7 @@ export function calculateCloseTime(openTime, intervalMs) {
 async function fetchBybitKlines(coins, timeframe, limit) {
   const intervalMs = getIntervalDurationMs(timeframe);
   const bybitInterval = getBybitInterval(timeframe);
+
   const bybitKlinesPromises = coins.map(async (coin) => {
     try {
       const url = bybitPerpUrl(coin.symbol, bybitInterval, limit);
@@ -160,19 +161,20 @@ async function fetchBybitKlines(coins, timeframe, limit) {
 
       const rawEntries = data.result.list;
       const klineData = [];
-      const coin = coins.find((c) => c.symbol === coin.symbol) || {
+      const coinMeta = coins.find((c) => c.symbol === coin.symbol) || {
         category: "unknown",
         exchanges: [],
       };
 
       for (const entry of rawEntries) {
-        if (!Array.isArray(entry)) continue;
+        if (!Array.isArray(entry) || entry.length < 7) continue;
+
         klineData.push({
           openTime: Number(entry[0]),
           closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
           symbol: coin.symbol,
-          category: coin.category,
-          exchanges: coin.exchanges,
+          category: coinMeta.category,
+          exchanges: coinMeta.exchanges,
           openPrice: Number(entry[1]),
           highPrice: Number(entry[2]),
           lowPrice: Number(entry[3]),
@@ -184,7 +186,7 @@ async function fetchBybitKlines(coins, timeframe, limit) {
 
       return { symbol: coin.symbol, klineData };
     } catch (error) {
-      console.error(`Error processing ${symbol}:`, error);
+      console.error(`Error processing ${coin.symbol}:`, error);
       return { symbol: coin.symbol, klineData: [] };
     }
   });
