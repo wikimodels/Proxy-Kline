@@ -1,54 +1,74 @@
-// api/binance.js (Vercel Serverless Function)
+// api/binance/route.js
+export const config = {
+  runtime: "edge",
+  regions: ["hkg1"], // Hong Kong region (Binance-friendly)
+};
 
-export default async function handler(req, res) {
-  // 1. Get API key from environment
+export async function GET() {
   const apiKey =
     "EdRGpmIPUePKACmDlPCyuq1MPKgXjXMSoRR18ngEtJRX6dbQggHLWv361JwlX4sB";
-
-  if (!apiKey) {
-    return res.status(500).json({ error: "Binance API key not configured" });
-  }
-
-  // 2. Basic parameters
-  const params = new URLSearchParams({
-    symbol: "BTCUSDT",
-    interval: "5m",
-    limit: "1",
-  });
+  // Debug log to verify API key (remove in production)
+  console.log("Using API Key:", apiKey?.slice(0, 5) + "...");
 
   try {
-    // 3. Use MAIN Binance API endpoint (not futures)
+    const params = new URLSearchParams({
+      symbol: "BTCUSDT",
+      interval: "5m",
+      limit: "1",
+    });
+
+    // Use Binance's global endpoint
     const response = await fetch(
-      `https://api.binance.com/api/v3/klines?${params}`,
+      `https://fapi.binance.com/fapi/v1/klines?${params}`,
       {
         headers: {
           "X-MBX-APIKEY": apiKey,
-          "User-Agent": "Node/18", // Simple but effective UA
+          Accept: "application/json",
         },
       }
     );
 
-    // 4. Handle response
+    // Handle Binance's special error format
     if (!response.ok) {
-      const error = await response.json();
-      return res.status(400).json({
-        error: `Binance API error: ${error.msg}`,
-        code: error.code,
-      });
+      const errorData = await response.json();
+      return new Response(
+        JSON.stringify({
+          error: `Binance Error: ${errorData.msg}`,
+          code: errorData.code,
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // 5. Return clean data
     const data = await response.json();
-    return res.status(200).json({
-      open: data[0][1],
-      high: data[0][2],
-      low: data[0][3],
-      close: data[0][4],
-    });
+
+    return new Response(
+      JSON.stringify({
+        open: data[0][1],
+        high: data[0][2],
+        low: data[0][3],
+        close: data[0][4],
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=30", // 30s cache
+        },
+      }
+    );
   } catch (error) {
-    return res.status(500).json({
-      error: "Network error",
-      details: error.message,
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Network failure",
+        details: error.message,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
