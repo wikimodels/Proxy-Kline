@@ -146,9 +146,9 @@ export function calculateCloseTime(openTime, intervalMs) {
 async function fetchBybitKlines(coins, timeframe, limit) {
   const intervalMs = getIntervalDurationMs(timeframe);
   const bybitInterval = getBybitInterval(timeframe);
-  const bybitKlinesPromises = bybitSymbols.map(async (symbol) => {
+  const bybitKlinesPromises = coins.map(async (coin) => {
     try {
-      const url = bybitPerpUrl(symbol, bybitInterval, limit);
+      const url = bybitPerpUrl(coin.symbol, bybitInterval, limit);
       console.log(`Fetching: ${url}`);
 
       const response = await fetch(url);
