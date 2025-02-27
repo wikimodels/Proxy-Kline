@@ -33,7 +33,7 @@ export default async function handler(request) {
         dataSource: "Cluster0",
         database: "general",
         collection: "coin-repo",
-        filter: {},
+        filter: { collection: "coin-repo" },
       }),
     });
 
