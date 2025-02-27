@@ -63,14 +63,6 @@ export default async function handler(request) {
       );
     }
 
-    // Create a lookup map for coin details by symbol
-    const coinMap = coins.reduce((acc, coin) => {
-      if (coin.symbol) {
-        acc[coin.symbol] = coin;
-      }
-      return acc;
-    }, {});
-
     // Get filtered symbols for Binance and Bybit
     const { binanceSymbols, bybitSymbols } = getFilteredCoinSymbols(coins);
 
@@ -78,8 +70,8 @@ export default async function handler(request) {
     // 4. Define kline request parameters
     // =====================
     const binanceInterval = "5m";
-    const bybitInterval = "5m";
-    const limit = 100;
+    const bybitInterval = "5";
+    const limit = 1;
 
     // =====================
     // 5. Fetch and Process Kline Data concurrently using Promise.all
