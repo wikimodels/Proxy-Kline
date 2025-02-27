@@ -207,9 +207,9 @@ function getBybitInterval(timeframe) {
     D: "D",
   };
 
-  if (!(tf in timeframes)) {
-    throw new Error(`Unsupported timeframe: ${tf}`);
+  if (!(timeframe in timeframes)) {
+    throw new Error(`Unsupported timeframe: ${timeframe}`);
   }
 
-  return timeframes[tf];
+  return timeframes[timeframe];
 }
