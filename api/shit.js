@@ -32,7 +32,10 @@ export default async function handler(request) {
     if (!response.ok) {
       const errorData = await response.text();
       return new Response(
-        { errorData },
+        JSON.stringify({
+          error: `Binance Error: ${errorData.msg}`,
+          code: errorData.code,
+        }),
         {
           status: 502,
           headers: { "Content-Type": "application/json" },

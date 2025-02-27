@@ -86,11 +86,73 @@ export default async function handler(request) {
       });
     });
 
-    const bybitKlinesPromises = bybitSymbols.map((symbol) => {
-      const url = bybitPerpUrl(symbol, bybitInterval, limit);
-      console.log(url);
-      return fetch(url).then((res) => res.json());
-    });
+    async function fetchBybitKlines(
+      bybitSymbols,
+      bybitPerpUrl,
+      bybitInterval,
+      limit,
+      calculateCloseTime,
+      coinsMap
+    ) {
+      const intervalMs = getIntervalDurationMs(bybitInterval); // Ensure this function exists
+
+      const bybitKlinesPromises = bybitSymbols.map(async (symbol) => {
+        try {
+          const url = bybitPerpUrl(symbol, bybitInterval, limit);
+          console.log(`Fetching: ${url}`);
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (!data?.result?.list || !Array.isArray(data.result.list)) {
+            throw new Error(`Invalid response structure for ${symbol}`);
+          }
+
+          const rawEntries = data.result.list;
+          const klineData = [];
+          const coin = coins.find((c) => c.symbol === symbol) || {
+            category: "unknown",
+            exchanges: [],
+          };
+
+          for (const entry of rawEntries) {
+            try {
+              if (!Array.isArray(entry) || entry.length < 7) {
+                throw new Error("Invalid entry structure");
+              }
+
+              klineData.push({
+                openTime: Number(entry[0]),
+                closeTime: calculateCloseTime(Number(entry[0]), intervalMs),
+                symbol,
+                category: coin?.category || "unknown",
+                exchanges: coin?.exchanges || [],
+                openPrice: Number(entry[1]),
+                highPrice: Number(entry[2]),
+                lowPrice: Number(entry[3]),
+                closePrice: Number(entry[4]),
+                baseVolume: Number(entry[5]),
+                quoteVolume: Number(entry[6]),
+              });
+            } catch (entryError) {
+              console.warn(`Skipping invalid entry for ${symbol}:`, entryError);
+            }
+          }
+
+          if (klineData.length > 0) {
+            klineData.reverse();
+            klineData.pop(); // Remove last element only if array not empty
+          }
+
+          return { symbol, klineData };
+        } catch (error) {
+          console.error(`Error processing ${symbol}:`, error);
+          return { symbol, klineData: [] }; // Return empty array on error
+        }
+      });
+
+      return Promise.all(bybitKlinesPromises);
+    }
 
     //const binanceKlines = await Promise.all(binanceKlinesPromises);
     const bybitKlines = await Promise.all(bybitKlinesPromises);
