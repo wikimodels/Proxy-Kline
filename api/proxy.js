@@ -62,7 +62,7 @@ export default async function handler(request) {
         { status: 500 }
       );
     }
-
+    const bybitCoins = coins.filter((c) => c.exchanges.includes["Bybit"]);
     // =====================
     // 4. Define kline request parameters
     // =====================
@@ -75,7 +75,7 @@ export default async function handler(request) {
     // =====================
 
     // Fetch Bybit klines
-    const bybitKlines = await fetchBybitKlines(coins, timeframe, limit);
+    const bybitKlines = await fetchBybitKlines(bybitCoins, timeframe, limit);
 
     // =====================
     // 6. Return Combined Response
@@ -152,16 +152,12 @@ async function fetchBybitKlines(coins, timeframe, limit) {
       const response = await fetch(url);
       const data = await response.json();
 
-      if (!data?.result?.list || !Array.isArray(data.result.list)) {
-        throw new Error(`Invalid response structure for ${coin.symbol}`);
-      }
+      // if (!data?.result?.list || !Array.isArray(data.result.list)) {
+      //   throw new Error(`Invalid response structure for ${coin.symbol}`);
+      // }
 
       const rawEntries = data.result.list;
       const klineData = [];
-      const coinMeta = coins.find((c) => c.symbol === coin.symbol) || {
-        category: "unknown",
-        exchanges: [],
-      };
 
       for (const entry of rawEntries) {
         if (!Array.isArray(entry)) continue;
