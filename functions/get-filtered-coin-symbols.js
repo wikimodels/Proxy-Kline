@@ -9,7 +9,8 @@ export function getFilteredCoinSymbols(coins) {
       (coin) =>
         coin.exchanges &&
         coin.exchanges.includes("Bybit") &&
-        !coin.exchanges.includes("Binance")
+        !coin.exchanges.includes("Binance") &&
+        coin.collection == "coin-repo"
     )
     .map((coin) => coin.symbol);
 
