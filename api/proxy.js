@@ -62,7 +62,8 @@ export default async function handler(request) {
         { status: 500 }
       );
     }
-    const bybitCoins = coins.filter((c) => c.exchanges.includes["Bybit"]);
+    const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
+
     // =====================
     // 4. Define kline request parameters
     // =====================
@@ -82,7 +83,7 @@ export default async function handler(request) {
     // =====================
     return new Response(
       JSON.stringify({
-        coins,
+        bybitKlines,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
