@@ -82,7 +82,6 @@ export default async function handler(request) {
     // =====================
     return new Response(
       JSON.stringify({
-        binanceKlines: await Promise.all(binanceKlinesPromises), // Fixed: Now awaited
         bybitKlines,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
