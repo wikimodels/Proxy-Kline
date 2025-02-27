@@ -30,12 +30,9 @@ export default async function handler(request) {
 
     // Handle Binance's special error format
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.text();
       return new Response(
-        JSON.stringify({
-          error: `Binance Error: ${errorData.msg}`,
-          code: errorData.code,
-        }),
+        { errorData },
         {
           status: 502,
           headers: { "Content-Type": "application/json" },
