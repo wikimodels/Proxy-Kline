@@ -25,7 +25,7 @@ export default async function handler(request) {
     );
 
     const timeframe = "m5";
-    const limit = 10;
+    const limit = 400;
 
     const [bybitKlines, bingXKlines] = await Promise.all([
       fetchBybitKlines(bybitCoins, timeframe, limit),
