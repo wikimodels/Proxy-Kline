@@ -1,4 +1,4 @@
-export const getBybitInterval = (timeframe) => {
+export const getBybitKlineInterval = (timeframe) => {
   const timeframes = {
     m1: "1",
     m5: "5",

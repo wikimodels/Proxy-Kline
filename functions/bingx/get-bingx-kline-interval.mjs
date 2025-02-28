@@ -1,4 +1,4 @@
-export const getBingXInterval = (timeframe) => {
+export const getBingXKlineInterval = (timeframe) => {
   const timeframes = {
     m1: "1m",
     m5: "5m",

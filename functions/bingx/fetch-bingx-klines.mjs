@@ -1,11 +1,11 @@
-import { getIntervalDurationMs } from "./get-interval-duration-ms.mjs";
+import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
 import { bingxPerpUrl } from "./bingx-perps-url";
-import { calculateCloseTime } from "./calculate-close-time.mjs";
-import { getBingXInterval } from "./get-bingx-interval.mjs";
+import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { getBingXKlineInterval } from "./get-bingx-kline-interval.mjs";
 
 export const fetchBingXKlines = async (coins, timeframe, limit) => {
   const intervalMs = getIntervalDurationMs(timeframe);
-  const bingXInterval = getBingXInterval(timeframe);
+  const bingXInterval = getBingXKlineInterval(timeframe);
 
   const promises = coins.map(async (coin) => {
     try {
