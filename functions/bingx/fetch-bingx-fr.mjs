@@ -1,15 +1,9 @@
-import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
-import { getBingXFrInterval } from "./get-bingx-fr-interval.mjs";
-import { bingXFrUrl } from "./bingx-fr-url";
-import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { bingXFrUrl } from "./bingx-fr-url.mjs";
 
-export const fetchBingXFr = async (coins, timeframe, limit) => {
-  const intervalMs = getIntervalDurationMs(timeframe);
-  const bingXInterval = getBingXFrInterval(timeframe);
-
+export const fetchBingXFr = async (coins, limit) => {
   const promises = coins.map(async (coin) => {
     try {
-      const url = bingXFrUrl(coin.symbol, bingXInterval, limit);
+      const url = bingXFrUrl(coin.symbol, limit);
       const response = await fetch(url);
       const data = await response.json();
 
@@ -18,18 +12,14 @@ export const fetchBingXFr = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      // // ✅ Fix: Iterate over data.data directly (not data.data[0])
       const klineData = data.data.map((entry) => ({
         openTime: Number(entry.fundingTime),
-        closeTime: calculateCloseTime(Number(entry.fundingTime), intervalMs),
         symbol: coin.symbol,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         fundingRate: Number(entry.fundingRate),
       }));
 
-      // klineData.reverse();
-      // klineData.pop();
       return { symbol: coin.symbol, klineData };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);

@@ -1,19 +1,14 @@
-import { getIntervalDurationMs } from "../get-interval-duration-ms.mjs";
-import { getBybitOiInterval } from "./get-bybit-oi-interval.mjs";
-import { bybitOiUrl } from "./bybit-oi-url.mjs";
-import { calculateCloseTime } from "../calculate-close-time.mjs";
+import { bybitFrUrl } from "./bybit-fr-url.mjs";
 
-export const fetchBybitOi = async (coins, timeframe, limit) => {
-  const intervalMs = getIntervalDurationMs(timeframe);
-  const bybitInterval = getBybitOiInterval(timeframe);
-
+export const fetchBybitFr = async (coins, limit) => {
   const promises = coins.map(async (coin) => {
     try {
-      const url = bybitOiUrl(coin.symbol, bybitInterval, limit);
+      const url = bybitFrUrl(coin.symbol, limit);
 
       const response = await fetch(url);
       const data = await response.json();
 
+      // ✅ Fix: Correct response structure validation
       if (!data?.result?.list || !Array.isArray(data.result.list)) {
         console.error(`Invalid response structure for ${coin.symbol}:`, data);
         throw new Error(`Invalid response structure for ${coin.symbol}`);
@@ -21,17 +16,14 @@ export const fetchBybitOi = async (coins, timeframe, limit) => {
 
       const rawEntries = data.result.list;
       const klineData = rawEntries.map((entry) => ({
-        openTime: Number(entry.timestamp),
-        closeTime: calculateCloseTime(entry.timestamp, intervalMs), // Make sure intervalMs is correct
+        openTime: Number(entry.fundingRateTimestamp),
         symbol: coin.symbol,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
-        openInterest: Number(entry.openInterest),
+        fundingRate: Number(entry.fundingRate),
       }));
-
       klineData.reverse();
-      klineData.pop();
-
+      // klineData.pop();
       return { symbol: coin.symbol, klineData };
     } catch (error) {
       console.error(`Error processing ${coin.symbol}:`, error);

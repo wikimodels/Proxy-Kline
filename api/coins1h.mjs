@@ -24,8 +24,8 @@ export default async function handler(request) {
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
 
-    const timeframe = "m5";
-    const limit = 400;
+    const timeframe = "h1";
+    const limit = 200;
 
     const [bybitKlines, bingXKlines] = await Promise.all([
       fetchBybitKlines(bybitCoins, timeframe, limit),

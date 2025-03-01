@@ -1,10 +1,10 @@
-import { fetchBybitOi } from "../functions/bybit/fetch-bybit-oi.mjs";
-import { fetchBingXFr } from "../functions/bingx/fetch-bingx-fr.mjs";
+import { fetchBybitKlines } from "../functions/bybit/fetch-bybit-klines.mjs";
+import { fetchBingXKlines } from "../functions/bingx/fetch-bingx-klines.mjs";
 import { fetchCoins } from "../functions/fetch-coins.mjs";
 
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["fra1"],
 };
 
 export default async function handler(request) {
@@ -24,17 +24,15 @@ export default async function handler(request) {
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
 
-    const timeframe = "h1";
-    const limit = 4;
+    const timeframe = "m15";
+    const limit = 200;
 
-    //const res = await fetchBybitOi(bybitCoins, timeframe, limit);
-    const res = await fetchBingXFr(bingXCoins, timeframe, limit);
-    // const [bybitKlines, bingXKlines] = await Promise.all([
-    //   fetchBybitKlines(bybitCoins, timeframe, limit),
-    //   fetchBingXKlines(bingXCoins, timeframe, limit),
-    // ]);
+    const [bybitKlines, bingXKlines] = await Promise.all([
+      fetchBybitKlines(bybitCoins, timeframe, limit),
+      fetchBingXKlines(bingXCoins, timeframe, limit),
+    ]);
 
-    return new Response(JSON.stringify({ res }), {
+    return new Response(JSON.stringify({ bingXKlines, bybitKlines }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
