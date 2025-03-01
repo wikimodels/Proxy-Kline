@@ -28,11 +28,20 @@ export default async function handler(request) {
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
 
-    const bybitData = await fetchBybitOi(bybitCoins, timeframe, limit);
+    const [bybitData, bingXData] = await Promise.all([
+      fetchBybitOi(bybitCoins, timeframe, limit),
+      fetchBingXOi(bingXCoins, timeframe, limit),
+    ]);
 
     if (!bybitData?.[0]?.klineData?.length) {
       return new Response(
         JSON.stringify({ error: "No valid kline data from Bybit" }),
+        { status: 500 }
+      );
+    }
+    if (!Array.isArray(bingXData)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid data format from BingX" }),
         { status: 500 }
       );
     }
@@ -41,17 +50,7 @@ export default async function handler(request) {
     const openTime = lastKline.openTime;
     const closeTime = lastKline.closeTime;
 
-    let bingXData = await fetchBingXOi(bingXCoins);
-
-    if (!Array.isArray(bingXData)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid data format from BingX" }),
-        { status: 500 }
-      );
-    }
-
-    // ✅ Correctly transform `bingXData`
-    bingXData = bingXData.map((d) => ({
+    const bingXDataUpdated = bingXData.map((d) => ({
       symbol: d.symbol,
       category: d.klineData.category || "unknown",
       exchanges: Array.isArray(d.klineData.exchanges)
@@ -64,7 +63,7 @@ export default async function handler(request) {
 
     console.log(bingXData[0]);
 
-    return new Response(JSON.stringify({ bingXData, bybitData }), {
+    return new Response(JSON.stringify({ bingXDataUpdated, bybitData }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
