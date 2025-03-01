@@ -63,10 +63,13 @@ export default async function handler(request) {
 
     console.log(bingXData[0]);
 
-    return new Response(JSON.stringify({ bingXDataUpdated, bybitData }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ bingXData: bingXDataUpdated, bybitData }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: "Server error", details: error.message }),
