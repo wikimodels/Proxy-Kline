@@ -32,7 +32,7 @@ export default async function handler(request) {
       fetchBingXKlines(bingXCoins, timeframe, limit),
     ]);
 
-    return new Response(JSON.stringify({ bingXKlines, bybitKlines }), {
+    return new Response(JSON.stringify({ { klines15min: [...bingXKlines, ...bybitKlines] } }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
