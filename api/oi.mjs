@@ -53,8 +53,10 @@ export default async function handler(request) {
     // ✅ Correctly transform `bingXData`
     bingXData = bingXData.map((d) => ({
       symbol: d.symbol,
-      category: d.category,
-      exchanges: d.exchanges,
+      category: d.klineData.category || "unknown",
+      exchanges: Array.isArray(d.klineData.exchanges)
+        ? d.klineData.exchanges
+        : [],
       openTime: openTime,
       closeTime: closeTime,
       openInterest: d.klineData?.openInterest || 0,
