@@ -4,7 +4,7 @@ import { fetchBingXOi } from "../functions/bingx/fetch-bingx-oi.mjs";
 
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["lhr1"],
 };
 
 export default async function handler(request) {

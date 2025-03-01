@@ -4,7 +4,7 @@ import { fetchCoins } from "../functions/fetch-coins.mjs";
 
 export const config = {
   runtime: "edge",
-  regions: ["arn1"],
+  regions: ["cdg1"],
 };
 
 export default async function handler(request) {
