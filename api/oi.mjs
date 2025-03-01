@@ -10,7 +10,8 @@ export const config = {
 export default async function handler(request) {
   try {
     const timeframe = "h1";
-    const limit = 2;
+    const limit = 200;
+
     const coins = await fetchCoins();
 
     if (!Array.isArray(coins)) {

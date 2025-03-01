@@ -9,6 +9,7 @@ export const config = {
 
 export default async function handler(request) {
   try {
+    const limit = 200;
     const coins = await fetchCoins();
 
     if (!Array.isArray(coins)) {
@@ -22,8 +23,6 @@ export default async function handler(request) {
     const bingXCoins = coins.filter(
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
-
-    const limit = 200;
 
     const [bybitData, bingXData] = await Promise.all([
       fetchBybitFr(bybitCoins, limit),
