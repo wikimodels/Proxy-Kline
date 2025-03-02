@@ -21,10 +21,15 @@ export default async function handler(request) {
       );
     }
 
-    const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
-    const bingXCoins = coins.filter(
-      (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
-    );
+    const bybitCoins = coins
+      .filter((c) => c.exchanges.includes("Bybit"))
+      .slice(0, 1);
+    const bingXCoins = coins
+      .filter(
+        (c) =>
+          !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
+      )
+      .slice(0, 1);
 
     const [bybitKlines, bingXKlines] = await Promise.all([
       fetchBybitKlines(bybitCoins, timeframe, limit),
