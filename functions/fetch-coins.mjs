@@ -29,7 +29,7 @@ export const fetchCoins = async () => {
   return (mongoData.documents || []).map((doc) => ({
     symbol: doc.symbol || "unknown",
     category: doc.category || "unknown",
-    image_url: doc.image_url || "unknown",
+    imageUrl: doc.image_url || "assets/img/noname.png",
     exchanges: Array.isArray(doc.exchanges) ? doc.exchanges : [],
   }));
 };
