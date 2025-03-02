@@ -31,6 +31,7 @@ export const fetchBybitKlines = async (coins, timeframe, limit) => {
           symbol: coin.symbol,
           category: coin.category || "unknown",
           exchanges: coin.exchanges || [],
+          imageUrl: coin.image_url || "assets/img/noname.png",
           openPrice: Number(entry[1]),
           highPrice: Number(entry[2]),
           lowPrice: Number(entry[3]),

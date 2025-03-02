@@ -28,10 +28,6 @@ export default async function handler(request) {
     // Retrieve the stored value
     const storedData = await redis.get(key);
 
-    // Debugging: Log stored data type
-    console.log("Stored Data Type:", typeof storedData);
-    console.log("Stored Data:", storedData);
-
     // If it's a string, parse it; otherwise, return as is
     const parsedData =
       typeof storedData === "string" ? JSON.parse(storedData) : storedData;
