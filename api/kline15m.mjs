@@ -10,7 +10,7 @@ export const config = {
 export default async function handler(request) {
   try {
     const timeframe = "m15";
-    const limit = 200;
+    const limit = 2;
 
     const coins = await fetchCoins();
 
