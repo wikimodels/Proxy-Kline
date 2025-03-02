@@ -22,7 +22,6 @@ export default async function handler(request) {
     }
 
     const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
-
     const bingXCoins = coins.filter(
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
@@ -32,10 +31,15 @@ export default async function handler(request) {
       fetchBingXKlines(bingXCoins, timeframe, limit),
     ]);
 
-    return new Response(JSON.stringify({ { klines15min: [...bingXKlines, ...bybitKlines] } }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        klines15min: [...(bingXKlines ?? []), ...(bybitKlines ?? [])],
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: "Server error", details: error.message }),
