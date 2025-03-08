@@ -1,6 +1,6 @@
 import { fetchBybitKlines } from "../../functions/bybit/fetch-bybit-klines.mjs";
 import { fetchBingXKlines } from "../../functions/bingx/fetch-bingx-klines.mjs";
-import { fetchCoins } from "../../functions/fetch-coins.mjs";
+import { fetchCoins } from "../../functions/fetch-coins-from-db.mjs";
 
 export const config = {
   runtime: "edge",

@@ -1,4 +1,4 @@
-export const fetchCoins = async () => {
+export const fetchCoinsFromDb = async () => {
   const dataApiUrl = process.env.DATA_API_URL;
   const dataApiKey = process.env.DATA_API_KEY;
 

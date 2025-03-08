@@ -1,4 +1,4 @@
-import { fetchCoins } from "../functions/fetch-coins.mjs";
+import { fetchCoinsFromDb } from "../functions/fetch-coins-from-db.mjs";
 import { Redis } from "@upstash/redis";
 
 export const config = {
@@ -13,7 +13,7 @@ export default async function handler(request) {
   });
 
   try {
-    const coins = await fetchCoins();
+    const coins = await fetchCoinsFromDb();
 
     if (!Array.isArray(coins)) {
       return new Response(
