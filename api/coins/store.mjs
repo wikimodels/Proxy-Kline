@@ -1,4 +1,4 @@
-import { fetchCoinsFromDb } from "../functions/fetch-coins-from-db.mjs";
+import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 import { Redis } from "@upstash/redis";
 
 export const config = {
