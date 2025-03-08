@@ -1,6 +1,6 @@
-import { fetchBybitFr } from "../functions/bybit/fetch-bybit-fr.mjs";
-import { fetchBingXFr } from "../functions/bingx/fetch-bingx-fr.mjs";
-import { fetchCoins } from "../functions/fetch-coins.mjs";
+import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
+import { fetchBingXFr } from "../../functions/bingx/fetch-bingx-fr.mjs";
+import { fetchCoins } from "../../functions/fetch-coins.mjs";
 
 export const config = {
   runtime: "edge",
