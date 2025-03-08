@@ -1,5 +1,5 @@
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
-import { fetchCoins } from "../../functions/fetch-coins-from-db.mjs";
+import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 import { fetchBingXOi } from "../../functions/bingx/fetch-bingx-oi.mjs";
 
 export const config = {
@@ -12,7 +12,7 @@ export default async function handler(request) {
     const timeframe = "h1";
     const limit = 200;
 
-    const coins = await fetchCoins();
+    const coins = await fetchCoinsFromDb();
 
     if (!Array.isArray(coins)) {
       return new Response(

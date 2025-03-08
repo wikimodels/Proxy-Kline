@@ -1,6 +1,6 @@
 import { fetchBybitKlines } from "../../functions/bybit/fetch-bybit-klines.mjs";
 import { fetchBingXKlines } from "../../functions/bingx/fetch-bingx-klines.mjs";
-import { fetchCoins } from "../../functions/fetch-coins-from-db.mjs";
+import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 
 export const config = {
   runtime: "edge",
@@ -12,7 +12,7 @@ export default async function handler(request) {
     const timeframe = "m15";
     const limit = 200;
 
-    const coins = await fetchCoins();
+    const coins = await fetchCoinsFromDb();
 
     if (!Array.isArray(coins)) {
       return new Response(

@@ -1,6 +1,6 @@
 import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
 import { fetchBingXFr } from "../../functions/bingx/fetch-bingx-fr.mjs";
-import { fetchCoins } from "../../functions/fetch-coins-from-db.mjs";
+import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 
 export const config = {
   runtime: "edge",
@@ -10,7 +10,7 @@ export const config = {
 export default async function handler(request) {
   try {
     const limit = 200;
-    const coins = await fetchCoins();
+    const coins = await fetchCoinsFromDb();
 
     if (!Array.isArray(coins)) {
       return new Response(
