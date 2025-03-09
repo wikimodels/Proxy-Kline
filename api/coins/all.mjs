@@ -5,6 +5,8 @@ export const config = {
   regions: ["fra1"],
 };
 
+// THIS SCRIPT BRINS DATA FROM REDIS AND RETURNS IT TO THE CLIENT
+
 export default async function handler(request) {
   const redis = new Redis({
     url: process.env.KV_REST_API_URL,
@@ -25,7 +27,7 @@ export default async function handler(request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*", // ✅ Allow requests from any frontend
+        "Access-Control-Allow-Origin": "*",
       },
     });
   } catch (error) {

@@ -1,6 +1,6 @@
+import { Redis } from "@upstash/redis";
 import { fetchBybitKlines } from "../../functions/bybit/fetch-bybit-klines.mjs";
 import { fetchBingXKlines } from "../../functions/bingx/fetch-bingx-klines.mjs";
-import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 
 export const config = {
   runtime: "edge",
@@ -12,7 +12,19 @@ export default async function handler(request) {
     const timeframe = "m15";
     const limit = 200;
 
-    const coins = await fetchCoinsFromDb();
+    const redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
+
+    const key = "coins";
+
+    // Retrieve the stored value
+    const storedData = await redis.get(key);
+
+    // If it's a string, parse it; otherwise, return as is
+    const coins =
+      typeof storedData === "string" ? JSON.parse(storedData) : storedData;
 
     if (!Array.isArray(coins)) {
       return new Response(
@@ -20,7 +32,6 @@ export default async function handler(request) {
         { status: 500 }
       );
     }
-
     const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
 
     const bingXCoins = coins.filter(

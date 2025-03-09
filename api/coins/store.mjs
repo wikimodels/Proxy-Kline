@@ -1,4 +1,4 @@
-import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
+import { fetchCoinsFromDb } from "../../functions/coins/fetch-coins-from-db.mjs";
 import { Redis } from "@upstash/redis";
 
 export const config = {
@@ -6,6 +6,8 @@ export const config = {
   regions: ["fra1"],
 };
 
+// THIS SCRIPT BRINS DATA FROM MONGODB AND STORES IT IN REDIS
+// THE DATA IS THEN RETURNED TO THE CLIENT
 export default async function handler(request) {
   const redis = new Redis({
     url: process.env.KV_REST_API_URL,

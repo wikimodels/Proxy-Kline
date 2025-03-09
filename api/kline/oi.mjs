@@ -1,5 +1,6 @@
+import { Redis } from "@upstash/redis";
 import { fetchBybitOi } from "../../functions/bybit/fetch-bybit-oi.mjs";
-import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
+
 import { fetchBingXOi } from "../../functions/bingx/fetch-bingx-oi.mjs";
 
 export const config = {
@@ -12,7 +13,19 @@ export default async function handler(request) {
     const timeframe = "h1";
     const limit = 200;
 
-    const coins = await fetchCoinsFromDb();
+    const redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    });
+
+    const key = "coins";
+
+    // Retrieve the stored value
+    const storedData = await redis.get(key);
+
+    // If it's a string, parse it; otherwise, return as is
+    const coins =
+      typeof storedData === "string" ? JSON.parse(storedData) : storedData;
 
     if (!Array.isArray(coins)) {
       return new Response(
