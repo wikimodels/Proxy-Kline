@@ -24,6 +24,7 @@ export const fetchBybitOi = async (coins, timeframe, limit) => {
         openTime: Number(entry.timestamp),
         closeTime: calculateCloseTime(entry.timestamp, intervalMs), // Make sure intervalMs is correct
         symbol: coin.symbol,
+        imageUrl: coin.imageUrl,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         openInterest: Number(entry.openInterest),

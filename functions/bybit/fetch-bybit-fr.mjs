@@ -18,6 +18,7 @@ export const fetchBybitFr = async (coins, limit) => {
       const klineData = rawEntries.map((entry) => ({
         openTime: Number(entry.fundingRateTimestamp),
         symbol: coin.symbol,
+        imageUrl: coin.imageUrl,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         fundingRate: Number(entry.fundingRate),
