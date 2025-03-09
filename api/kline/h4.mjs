@@ -1,5 +1,5 @@
-import { fetchBybitFr } from "../../functions/bybit/fetch-bybit-fr.mjs";
-import { fetchBingXFr } from "../../functions/bingx/fetch-bingx-fr.mjs";
+import { fetchBybitKlines } from "../../functions/bybit/fetch-bybit-klines.mjs";
+import { fetchBingXKlines } from "../../functions/bingx/fetch-bingx-klines.mjs";
 import { fetchCoinsFromDb } from "../../functions/fetch-coins-from-db.mjs";
 
 export const config = {
@@ -9,7 +9,9 @@ export const config = {
 
 export default async function handler(request) {
   try {
+    const timeframe = "h4";
     const limit = 200;
+
     const coins = await fetchCoinsFromDb();
 
     if (!Array.isArray(coins)) {
@@ -20,21 +22,23 @@ export default async function handler(request) {
     }
 
     const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
+
     const bingXCoins = coins.filter(
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
     );
 
-    const [bybitData, bingXData] = await Promise.all([
-      fetchBybitFr(bybitCoins, limit),
-      fetchBingXFr(bingXCoins, limit),
+    const [bybitKlines, bingXKlines] = await Promise.all([
+      fetchBybitKlines(bybitCoins, timeframe, limit),
+      fetchBingXKlines(bingXCoins, timeframe, limit),
     ]);
 
-    const fundingRates = [...bybitData, ...bingXData];
-
-    return new Response(JSON.stringify({ fundingRates }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ klines4h: [...bingXKlines, ...bybitKlines] }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({ error: "Server error", details: error.message }),
