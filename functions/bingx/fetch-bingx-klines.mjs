@@ -28,7 +28,7 @@ export const fetchBingXKlines = async (coins, timeframe, limit) => {
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         openPrice: Number(entry.open),
-        imageUrl: coin.image_url || "assets/img/noname.png",
+        imageUrl: coin.imageUrl || "assets/img/noname.png",
         highPrice: Number(entry.high),
         lowPrice: Number(entry.low),
         closePrice: Number(entry.close),

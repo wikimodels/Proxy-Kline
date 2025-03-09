@@ -14,6 +14,7 @@ export const fetchBingXOi = async (coins) => {
       const klineData = {
         openTime: Number(data.data.time),
         symbol: coin.symbol,
+        imageUrl: coin.imageUrl,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         openInterest: Number(data.data.openInterest),

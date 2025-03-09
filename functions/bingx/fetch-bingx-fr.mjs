@@ -15,6 +15,7 @@ export const fetchBingXFr = async (coins, limit) => {
       const klineData = data.data.map((entry) => ({
         openTime: Number(entry.fundingTime),
         symbol: coin.symbol,
+        imageUrl: coin.imageUrl,
         category: coin.category || "unknown",
         exchanges: coin.exchanges || [],
         fundingRate: Number(entry.fundingRate),
