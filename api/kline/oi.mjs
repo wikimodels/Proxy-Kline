@@ -26,7 +26,7 @@ export default async function handler(request) {
     // If it's a string, parse it; otherwise, return as is
     const coins =
       typeof storedData === "string" ? JSON.parse(storedData) : storedData;
-
+    console.log(coins.length);
     if (!Array.isArray(coins)) {
       return new Response(
         JSON.stringify({ error: "Invalid data format from MongoDB" }),
@@ -34,9 +34,7 @@ export default async function handler(request) {
       );
     }
 
-    const bybitCoins = coins
-      .filter((c) => c.exchanges.includes("Bybit"))
-      .slice(0, 2);
+    const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
 
     const bingXCoins = coins.filter(
       (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
