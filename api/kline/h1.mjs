@@ -10,7 +10,7 @@ export const config = {
 export default async function handler(request) {
   try {
     const timeframe = "h1";
-    const limit = 200;
+    const limit = 400;
 
     const redis = new Redis({
       url: process.env.KV_REST_API_URL,
