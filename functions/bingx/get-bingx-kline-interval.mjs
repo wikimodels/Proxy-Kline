@@ -10,7 +10,7 @@ export const getBingXKlineInterval = (timeframe) => {
     h6: "6h",
     h8: "8h",
     h12: "12h",
-    D: "D",
+    D: "1d",
   };
 
   if (!(timeframe in timeframes)) {
