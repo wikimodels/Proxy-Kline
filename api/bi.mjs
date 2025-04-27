@@ -1,15 +1,10 @@
-// /api/binance-proxy.mjs (for Edge Function)
+// /api/binance-proxy.mjs
 
-export const config = {
-  runtime: "edge",
-};
-
-export default async function handler(req) {
-  const { searchParams } = new URL(req.url);
-  const url = searchParams.get("url");
+export default async function handler(req, res) {
+  const { url } = req.query;
 
   if (!url) {
-    return new Response("Missing 'url' query parameter", { status: 400 });
+    return res.status(400).send("Missing 'url' query parameter");
   }
 
   const fullUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=5`;
@@ -24,16 +19,13 @@ export default async function handler(req) {
 
     const body = await binanceResponse.text();
 
-    return new Response(body, {
-      status: binanceResponse.status,
-      headers: {
-        "Content-Type":
-          binanceResponse.headers.get("Content-Type") || "application/json",
-        "Cache-Control": "no-store",
-      },
-    });
+    res
+      .status(binanceResponse.status)
+      .setHeader("Content-Type", "application/json")
+      .setHeader("Cache-Control", "no-store")
+      .send(body);
   } catch (error) {
     console.error("[Proxy Error]", error);
-    return new Response("Proxy Error", { status: 500 });
+    res.status(500).send("Proxy Error");
   }
 }
