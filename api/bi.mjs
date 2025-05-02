@@ -1,31 +1,50 @@
-// /api/binance-proxy.mjs
+export const config = { runtime: "edge" };
 
-export default async function handler(req, res) {
-  const { url } = req.query;
+export default async function handler(request: Request) {
+  // Parse incoming request URL
+  const targetUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=5`;
 
-  if (!url) {
-    return res.status(400).send("Missing 'url' query parameter");
-  }
+  // Clone and modify headers
+  const headers = new Headers(request.headers);
+  headers.set(
+    "User-Agent",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+  );
+  headers.set("Accept", "*/*");
+  headers.set("Accept-Language", "en-US,en;q=0.9");
+  headers.set("Origin", "https://www.binance.com");
+  headers.set("Referer", "https://www.binance.com/");
 
-  const fullUrl = `https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=5`;
+  // Remove headers that might reveal proxy
+  headers.delete("x-vercel-id");
+  headers.delete("x-vercel-ip-country");
+  headers.delete("x-vercel-deployment-url");
 
   try {
-    const binanceResponse = await fetch(fullUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        Accept: "application/json",
-      },
+    // Forward request to Binance
+    const response = await fetch(targetUrl.toString(), {
+      method: request.method,
+      headers: headers,
+      body: request.body,
     });
 
-    const body = await binanceResponse.text();
-
-    res
-      .status(binanceResponse.status)
-      .setHeader("Content-Type", "application/json")
-      .setHeader("Cache-Control", "no-store")
-      .send(body);
+    // Create CORS-friendly response
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        ...Object.fromEntries(response.headers),
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    });
   } catch (error) {
-    console.error("[Proxy Error]", error);
-    res.status(500).send("Proxy Error");
+    return new Response(JSON.stringify({ error: "Proxy error" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
   }
 }
