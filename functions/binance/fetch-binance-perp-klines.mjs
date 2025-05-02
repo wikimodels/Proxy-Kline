@@ -1,5 +1,4 @@
 import { getBinanceKlineInterval } from "./get-binance-kline-interval.mjs";
-
 import { binancePerpsUrl } from "./binance-perps-url.mjs";
 
 export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
@@ -31,7 +30,7 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
-      const data = responseData.map((entry: any) => ({
+      const data = responseData.map((entry) => ({
         symbol: coin.symbol,
         openTime: parseFloat(entry[0]),
         closeTime: parseFloat(entry[6]),
