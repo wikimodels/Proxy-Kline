@@ -34,13 +34,21 @@ export default async function handler(request) {
       );
     }
 
-    const bybitCoins = coins.filter((c) => c.exchanges.includes("Bybit"));
+    const binanceCoins = coins.filter((c) => c.exchanges.includes("Binance"));
+
+    const bybitCoins = coins.filter(
+      (c) => c.exchanges.includes("Bybit") && !c.exchanges.includes("Binance")
+    );
 
     const bingXCoins = coins.filter(
-      (c) => !c.exchanges.includes("Bybit") && c.exchanges.includes("BingX PF")
+      (c) =>
+        !c.exchanges.includes("Bybit") &&
+        !c.exchanges.includes("Binance") &&
+        c.exchanges.includes("BingX PF")
     );
 
     const [bybitData, bingXData] = await Promise.all([
+      fetchBiOi(binanceCoins, timeframe, limit),
       fetchBybitOi(bybitCoins, timeframe, limit),
       fetchBingXOi(bingXCoins, timeframe, limit),
     ]);
