@@ -21,10 +21,13 @@ export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
       const url = binancePerpsUrl(coin.symbol, binanceInterval, limit);
 
       const response = await fetch(url, { headers });
-      const data = await response.json();
+      const responseData = await response.json();
 
-      if (!Array.isArray(data)) {
-        console.error(`Invalid response structure for ${coin.symbol}:`, data);
+      if (!Array.isArray(responseData)) {
+        console.error(
+          `Invalid response structure for ${coin.symbol}:`,
+          responseData
+        );
         throw new Error(`Invalid response structure for ${coin.symbol}`);
       }
 
