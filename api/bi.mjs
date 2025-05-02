@@ -4,13 +4,27 @@ export const config = {
 };
 
 export default async function handler(request) {
-  // Hardcoded test URL
-  const targetUrl = new URL("https://api.binance.com/api/v3/klines");
-  targetUrl.searchParams.set("symbol", "BTCUSDT");
-  targetUrl.searchParams.set("interval", "1h");
-  targetUrl.searchParams.set("limit", "5");
+  // Validate method
+  if (!["GET", "HEAD"].includes(request.method)) {
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: { "Access-Control-Allow-Origin": "*" },
+    });
+  }
 
-  // Clone and modify headers
+  // Create base URL
+  const baseUrl = new URL("https://api.binance.com/api/v3/klines");
+
+  // Get query parameters from request
+  const requestUrl = new URL(request.url);
+  const params = new URLSearchParams(requestUrl.search);
+
+  // Copy all parameters to base URL
+  params.forEach((value, key) => {
+    baseUrl.searchParams.append(key, value);
+  });
+
+  // Configure headers
   const headers = new Headers(request.headers);
   headers.set(
     "User-Agent",
@@ -27,13 +41,10 @@ export default async function handler(request) {
   );
 
   try {
-    const response = await fetch(targetUrl, {
-      method: "GET", // Force GET for testing
+    const response = await fetch(baseUrl, {
+      method: "GET",
       headers,
     });
-
-    // Log response status for debugging
-    console.log(`Response status: ${response.status}`);
 
     return new Response(response.body, {
       status: response.status,
