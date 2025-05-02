@@ -3,29 +3,12 @@ export const config = {
   regions: ["cdg1"],
 };
 
-export default async function handler(request: Request) {
-  // Validate request method
-  if (!["GET", "HEAD"].includes(request.method)) {
-    return new Response("Method not allowed", {
-      status: 405,
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  // Parse and validate URL
-  const url = new URL(request.url);
-  const targetPath = url.pathname.replace("/api/proxy/", "");
-
-  if (!targetPath.startsWith("api/")) {
-    return new Response("Invalid endpoint", {
-      status: 400,
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  const targetUrl = new URL(
-    `https://api.binance.com/${targetPath}${url.search}`
-  );
+export default async function handler(request) {
+  // Hardcoded test URL
+  const targetUrl = new URL("https://api.binance.com/api/v3/klines");
+  targetUrl.searchParams.set("symbol", "BTCUSDT");
+  targetUrl.searchParams.set("interval", "1h");
+  targetUrl.searchParams.set("limit", "5");
 
   // Clone and modify headers
   const headers = new Headers(request.headers);
@@ -45,22 +28,22 @@ export default async function handler(request: Request) {
 
   try {
     const response = await fetch(targetUrl, {
-      method: request.method,
+      method: "GET", // Force GET for testing
       headers,
-      body: request.method === "GET" ? null : request.body,
     });
+
+    // Log response status for debugging
+    console.log(`Response status: ${response.status}`);
 
     return new Response(response.body, {
       status: response.status,
       headers: {
-        ...Object.fromEntries(response.headers),
         "Access-Control-Allow-Origin": "*",
         "Content-Type":
           response.headers.get("Content-Type") || "application/json",
       },
     });
   } catch (error) {
-    // <-- This catch block was missing
     return new Response(
       JSON.stringify({
         error: "Proxy error",
@@ -75,4 +58,4 @@ export default async function handler(request: Request) {
       }
     );
   }
-} // <-- This closing brace for the handler function was missing
+}
