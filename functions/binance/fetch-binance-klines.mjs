@@ -1,7 +1,7 @@
 import { getBinanceKlineInterval } from "./get-binance-kline-interval.mjs";
 import { binancePerpsUrl } from "./binance-perps-url.mjs";
 
-export const fetchBinancePerpKlines = async (coins, timeframe, limit) => {
+export const fetchBinanceKlines = async (coins, timeframe, limit) => {
   const binanceInterval = getBinanceKlineInterval(timeframe);
 
   const promises = coins.map(async (coin) => {
