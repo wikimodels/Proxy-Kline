@@ -1,6 +1,7 @@
 import { fetchBybitKlinesBySymbol } from "../../functions/bybit/fetch-bybit-klines-by-symbol.mjs";
 import { fetchBingXKlinesBySymbol } from "../../functions/bingx/fetch-bingx-klines-by-symbol.mjs";
 import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
+import { fetchBinanceKlinesBySymbol } from "../../functions/binance/fetch-binance-klines-by-symbol.mjs";
 
 export const config = {
   runtime: "edge",
