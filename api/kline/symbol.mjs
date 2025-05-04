@@ -1,6 +1,6 @@
+import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { fetchBybitKlinesBySymbol } from "../../functions/bybit/fetch-bybit-klines-by-symbol.mjs";
 import { fetchBingXKlinesBySymbol } from "../../functions/bingx/fetch-bingx-klines-by-symbol.mjs";
-import { fetchCoinsFromRedis } from "../../functions/coins/fetch-coins-from-redis.mjs";
 import { fetchBinanceKlinesBySymbol } from "../../functions/binance/fetch-binance-klines-by-symbol.mjs";
 
 export const config = {
@@ -14,6 +14,9 @@ export default async function handler(request) {
     const symbol = searchParams.get("symbol");
     const timeframe = searchParams.get("timeframe");
     const limit = parseInt(searchParams.get("limit"), 10) || 100;
+    console.log("symbol", symbol);
+    console.log("timeframe", timeframe);
+    console.log("limit", limit);
 
     if (!symbol || !timeframe) {
       return new Response(
@@ -24,9 +27,10 @@ export default async function handler(request) {
       );
     }
 
-    const coins = await fetchCoinsFromRedis();
+    const { bybitCoins, binanceCoins, bingXCoins } =
+      await fetchCoinsFromRedis();
 
-    const coin = coins.find(
+    const coin = [...bybitCoins, ...binanceCoins, ...bingXCoins].find(
       (c) => c.symbol.toUpperCase() === symbol.toUpperCase()
     );
 
